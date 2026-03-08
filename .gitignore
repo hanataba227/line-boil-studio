@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# 테스트 산출물
+test_results/
+test_01_results/
+test_output.gif
+test_01_output.gif
+
+# 환경
+.env
+.venv
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
