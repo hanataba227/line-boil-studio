@@ -1,1 +1,85 @@
-# line-boil-studio
+# 🎨 Line Boil Studio
+
+<table>
+  <tr>
+    <td align="center"><img src="example_input.jpg" width="360" alt="원본 이미지"></td>
+    <td align="center"><img src="example_output.gif" width="360" alt="Line Boil GIF"></td>
+  </tr>
+  <tr>
+    <th align="center">원본 이미지</th>
+    <th align="center">Line Boil GIF</th>
+  </tr>
+</table>
+
+이미지 한 장을 업로드하면 **Line Boil(선 떨림)** 효과를 적용한 GIF를 자동으로 생성해 주는 웹 도구입니다.  
+
+---
+
+## ✨ 주요 기능
+
+- PNG / JPG 이미지 업로드 → Line Boil GIF 즉시 생성
+- 3가지 빌트인 프리셋 (Subtle · Soft · Bold) + Custom 직접 설정
+- 원본 이미지 DPI를 읽어 **300 DPI 출력 크기 자동 계산**
+- 생성된 GIF 미리보기 및 다운로드
+
+---
+
+## 🌐 바로 사용하기
+
+**[lineboilstudio.streamlit.app](https://lineboilstudio.streamlit.app/)**
+
+---
+
+## 🎛️ 파라미터 설명
+
+| 파라미터              | 범위        | 설명                                          | 낮을 때                   | 높을 때                       |
+| --------------------- | ----------- | --------------------------------------------- | ------------------------- | ----------------------------- |
+| **프레임 수**         | 2 – 12      | GIF를 구성하는 정지 프레임의 수               | 변화가 적고 파일이 가벼움 | 움직임이 풍부하고 파일이 커짐 |
+| **FPS**               | 1 – 24      | 초당 표시되는 프레임 수 (재생 속도)           | 느리고 끊기는 느낌        | 빠르고 부드러운 떨림          |
+| **변형 강도**         | 0.1 – 5.0   | 픽셀이 최대 몇 px 이동하는지 결정             | 미세한 떨림, 원본과 유사  | 크게 흔들리는 왜곡 효과       |
+| **변형 규모 (Scale)** | 4 – 64      | 변위 노이즈의 공간적 크기                     | 자글자글한 세밀한 노이즈  | 넓고 부드러운 덩어리 변형     |
+| **블러 강도 (Blur)**  | 0.01 – 0.20 | 변위 노이즈에 적용하는 가우시안 블러 비율     | 경계가 날카롭고 거친 변형 | 변형 경계가 매끄럽게 이어짐   |
+| **출력 DPI**          | 300 (고정)  | 원본 DPI 기준으로 300 DPI 출력 크기 자동 계산 | —                         | —                             |
+
+### 프리셋 기본값
+
+| 프리셋                     | 프레임 수 | FPS | 변형 강도 | 변형 규모 | 블러 강도 |
+| -------------------------- | --------- | --- | --------- | --------- | --------- |
+| Preset 1 — Subtle (섬세)   | 3         | 8   | 1.0       | 32        | 0.02      |
+| Preset 2 — Soft (부드러움) | 3         | 8   | 1.0       | 32        | 0.10      |
+| Preset 3 — Bold (역동적)   | 3         | 8   | 2.0       | 16        | 0.10      |
+
+> 💡 **추천:** 선화·스케치에는 Subtle, 채색 일러스트에는 Soft, 강조 효과에는 Bold를 시작점으로 삼아보세요.
+
+---
+
+## 🗂️ 프로젝트 구조
+
+```
+line-boil-studio/
+├── app.py              # Streamlit 메인 앱
+├── requirements.txt    # 의존성 목록
+├── core/
+│   └── line_boil.py    # Line Boil 엔진 (변위 맵 생성 · GIF 합성)
+├── utils/
+│   └── __init__.py
+└── docs/
+    └── PRD.md          # 제품 요구사항 문서
+```
+
+---
+
+## 🛠️ 기술 스택
+
+| 라이브러리                              | 용도                         |
+| --------------------------------------- | ---------------------------- |
+| [Streamlit](https://streamlit.io)       | 웹 UI                        |
+| [Pillow](https://python-pillow.org)     | 이미지 로드 · GIF 합성       |
+| [OpenCV (headless)](https://opencv.org) | 가우시안 블러 · 변위 맵 적용 |
+| [NumPy](https://numpy.org)              | 노이즈 생성 · 배열 연산      |
+
+---
+
+## 📄 라이선스
+
+MIT

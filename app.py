@@ -7,7 +7,7 @@ from PIL import Image
 import datetime
 import io
 
-from core.line_boil import generate_gif, PRESETS
+from core.line_boil import generate_gif, compute_output_size, PRESETS
 
 # ─── 페이지 설정 ──────────────────────────────────────────
 st.set_page_config(
@@ -58,7 +58,6 @@ def on_slider_change():
 # ─── 세션 초기화 (최초 1회) ───────────────────────────────
 if "slider_frame_count" not in st.session_state:
     st.session_state.p_preset           = PRESET_KEYS[0]
-    st.session_state.slider_output_size = 720
     _apply_preset(PRESET_KEYS[0])
 
 # 프리셋 퀵-스위치 버튼 처리
@@ -96,7 +95,7 @@ with st.sidebar:
 | 변형 강도 | `{st.session_state.get('slider_strength', '-')}` |
 | 변형 규모 | `{st.session_state.get('slider_scale', '-')}` |
 | 블러 강도 | `{st.session_state.get('slider_blur_ratio', '-')}` |
-| 출력 크기 | `{st.session_state.get('slider_output_size', '-')}px` |
+| 출력 DPI | `300 (고정)` |
 """)
     st.caption("세부 수치는 오른쪽 화면에서 변경하세요.")
 
@@ -156,11 +155,7 @@ with st.expander("📋 파라미터 설정", expanded=True):
             on_change=on_slider_change,
             help="변형 경계 부드러움. 높을수록 더 매끄럽게 이어짐",
         )
-        st.number_input(
-            "출력 크기 (가로 px)", 64, 2048, step=64,
-            key="slider_output_size",
-            help="출력 GIF 가로 크기. 원본 비율은 자동 유지",
-        )
+        st.info("출력 DPI: **300** (고정)", icon="🖨️")
 
 st.divider()
 
@@ -170,12 +165,18 @@ if "_img_bytes" not in st.session_state:
 
 pil_image = Image.open(io.BytesIO(st.session_state["_img_bytes"]))
 orig_w, orig_h = pil_image.size
+out_w, out_h = compute_output_size(pil_image)
 
 col1, col2 = st.columns(2)
 with col1:
     st.subheader("원본 이미지")
     st.image(pil_image, use_container_width=True)
-    st.caption(f"{orig_w} × {orig_h}px · {st.session_state['_img_type']}")
+    dpi_info = pil_image.info.get("dpi")
+    dpi_label = f"{int(dpi_info[0])} DPI" if dpi_info else "DPI 정보 없음"
+    st.caption(
+        f"입력: {orig_w} × {orig_h}px · {st.session_state['_img_type']} · {dpi_label}  "
+        f"🖨️ 출력: {out_w} × {out_h}px @ 300 DPI"
+    )
 
 if st.button("🔄 Line Boil GIF 생성", type="primary"):
     with st.spinner("GIF 생성 중..."):
@@ -186,11 +187,10 @@ if st.button("🔄 Line Boil GIF 생성", type="primary"):
             strength=st.session_state.slider_strength,
             scale=st.session_state.slider_scale,
             blur_ratio=st.session_state.slider_blur_ratio,
-            output_size=st.session_state.slider_output_size,
         )
     st.session_state["gif_bytes"] = gif_bytes
     st.session_state["gif_filename"] = (
-        f"lineboil_{uploaded.name.rsplit('.', 1)[0]}"
+        f"lineboil_{st.session_state['_img_name'].rsplit('.', 1)[0]}"
         f"_{datetime.datetime.now().strftime('%H%M%S')}.gif"
     )
 
@@ -212,3 +212,17 @@ if "gif_bytes" in st.session_state:
         file_name=st.session_state["gif_filename"],
         mime="image/gif",
     )
+
+st.divider()
+st.subheader("📖 파라미터 설명")
+st.markdown("""
+| 파라미터 | 범위 | 설명 | 낮을 때 | 높을 때 |
+|---|---|---|---|---|
+| **프레임 수** | 2 – 12 | GIF를 구성하는 정지 프레임의 수 | 변화가 적고 파일이 가벼움 | 움직임이 풍부하고 파일이 커짐 |
+| **FPS** | 1 – 24 | 초당 표시되는 프레임 수 (재생 속도) | 느리고 끊기는 느낌 | 빠르고 부드러운 떨림 |
+| **변형 강도** | 0.1 – 5.0 | 픽셀이 최대 몇 px 이동하는지 결정 | 미세한 떨림, 원본과 유사 | 크게 흔들리는 왜곡 효과 |
+| **변형 규모 (Scale)** | 4 – 64 | 변위 노이즈의 공간적 크기 | 자글자글한 세밀한 노이즈 | 넓고 부드러운 덩어리 변형 |
+| **블러 강도 (Blur)** | 0.01 – 0.20 | 변위 노이즈에 적용하는 가우시안 블러 비율 | 경계가 날카롭고 거친 변형 | 변형 경계가 매끄럽게 이어짐 |
+| **출력 DPI** | 300 (고정) | 원본 DPI 기준으로 300 DPI 출력 크기 자동 계산 | — | — |
+""")
+st.caption("💡 **추천:** 선화·스케치에는 Subtle, 채색 일러스트에는 Soft, 강조 효과에는 Bold 프리셋을 시작점으로 삼아보세요.")

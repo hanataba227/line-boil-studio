@@ -79,6 +79,24 @@ def apply_displacement(
     )
 
 
+TARGET_DPI = 300
+
+
+def compute_output_size(pil_image: Image.Image) -> tuple[int, int]:
+    """원본 이미지의 DPI 메타데이터 기준으로 300 DPI 출력 크기를 계산.
+    DPI 정보가 없으면 원본 픽셀 크기를 그대로 반환."""
+    orig_w, orig_h = pil_image.size
+    src_dpi = pil_image.info.get("dpi")
+    if src_dpi:
+        dpi_x = float(src_dpi[0]) if src_dpi[0] > 0 else TARGET_DPI
+        dpi_y = float(src_dpi[1]) if src_dpi[1] > 0 else TARGET_DPI
+        if abs(dpi_x - TARGET_DPI) > 1:
+            out_w = min(int(orig_w / dpi_x * TARGET_DPI), 4096)
+            out_h = max(1, int(orig_h / dpi_y * TARGET_DPI))
+            return out_w, out_h
+    return orig_w, orig_h
+
+
 def generate_gif(
     pil_image: Image.Image,
     frame_count: int,
@@ -86,10 +104,9 @@ def generate_gif(
     strength: float,
     scale: int,
     blur_ratio: float,
-    output_size: int | None = None,
 ) -> bytes:
     """
-    PIL 이미지 → Line Boil GIF bytes 반환.
+    PIL 이미지 → Line Boil GIF bytes 반환 (출력 해상도 고정 300 DPI).
 
     Args:
         pil_image:    입력 이미지 (PIL.Image)
@@ -98,18 +115,15 @@ def generate_gif(
         strength:     변위 강도 (픽셀 단위 최대 변위)
         scale:        노이즈 스케일 (높을수록 부드러운 변형)
         blur_ratio:   블러 비율 (이미지 최소 변 대비)
-        output_size:  출력 이미지 가로 크기(px). None이면 원본 크기 유지
 
     Returns:
         GIF 파일 bytes
     """
     img = pil_image.convert("RGBA")
 
-    if output_size is not None:
-        orig_w, orig_h = img.size
-        ratio = output_size / orig_w
-        new_h = max(1, int(orig_h * ratio))
-        img = img.resize((output_size, new_h), Image.LANCZOS)
+    out_w, out_h = compute_output_size(pil_image)
+    if (out_w, out_h) != img.size:
+        img = img.resize((out_w, out_h), Image.LANCZOS)
 
     img_rgba = np.array(img)
 
