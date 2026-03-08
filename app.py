@@ -5,6 +5,7 @@ Line Boil Studio — Streamlit 메인 앱
 import streamlit as st
 from PIL import Image
 import datetime
+import io
 
 from core.line_boil import generate_gif, PRESETS
 
@@ -111,6 +112,12 @@ uploaded = st.file_uploader(
     help="PNG 또는 JPG 이미지를 업로드하세요.",
 )
 
+# 프리셋 변경 등 rerun 후에도 이미지가 유지되도록 session_state에 캐싱
+if uploaded is not None:
+    st.session_state["_img_bytes"] = uploaded.read()
+    st.session_state["_img_name"]  = uploaded.name
+    st.session_state["_img_type"]  = uploaded.type
+
 st.divider()
 
 # ── 파라미터 패널 (슬라이더 key = slider_*, 전체 유일) ─────
@@ -157,18 +164,18 @@ with st.expander("📋 파라미터 설정", expanded=True):
 
 st.divider()
 
-if uploaded is None:
+if "_img_bytes" not in st.session_state:
     st.info("⬆️ 위에서 이미지를 업로드하세요.")
     st.stop()
 
-pil_image = Image.open(uploaded)
+pil_image = Image.open(io.BytesIO(st.session_state["_img_bytes"]))
 orig_w, orig_h = pil_image.size
 
 col1, col2 = st.columns(2)
 with col1:
     st.subheader("원본 이미지")
     st.image(pil_image, use_container_width=True)
-    st.caption(f"{orig_w} × {orig_h}px · {uploaded.type}")
+    st.caption(f"{orig_w} × {orig_h}px · {st.session_state['_img_type']}")
 
 if st.button("🔄 Line Boil GIF 생성", type="primary"):
     with st.spinner("GIF 생성 중..."):
