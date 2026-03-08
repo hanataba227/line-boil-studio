@@ -167,7 +167,7 @@ orig_w, orig_h = pil_image.size
 col1, col2 = st.columns(2)
 with col1:
     st.subheader("원본 이미지")
-    st.image(pil_image, width="stretch")
+    st.image(pil_image, use_container_width=True)
     st.caption(f"{orig_w} × {orig_h}px · {uploaded.type}")
 
 if st.button("🔄 Line Boil GIF 생성", type="primary"):
@@ -190,7 +190,7 @@ if st.button("🔄 Line Boil GIF 생성", type="primary"):
 if "gif_bytes" in st.session_state:
     with col2:
         st.subheader("Line Boil GIF")
-        st.image(st.session_state["gif_bytes"], width="stretch")
+        st.image(st.session_state["gif_bytes"], use_container_width=True)
         st.caption(
             f"프리셋: {st.session_state.p_preset} · "
             f"프레임: {st.session_state.slider_frame_count} · "
