@@ -18,7 +18,8 @@
 ## ✨ 주요 기능
 
 - PNG / JPG 이미지 업로드 → Line Boil GIF 즉시 생성
-- 3가지 빌트인 프리셋 (Subtle · Soft · Bold) + Custom 직접 설정
+- 3가지 빌트인 프리셋 (Subtle · Soft · Bold) + 커스텀 프리셋 생성/저장/이름 변경
+- 미니 슬라이더로 프리셋 파라미터 직접 조정
 - 원본 이미지 DPI를 읽어 **300 DPI 출력 크기 자동 계산**
 - 생성된 GIF 미리보기 및 다운로드
 
@@ -26,7 +27,7 @@
 
 ## 🌐 바로 사용하기
 
-**[lineboilstudio.streamlit.app](https://lineboilstudio.streamlit.app/)**
+**[hanataba227.github.io/line-boil-studio](https://hanataba227.github.io/line-boil-studio/)**
 
 ---
 
@@ -43,11 +44,11 @@
 
 ### 프리셋 기본값
 
-| 프리셋                     | 프레임 수 | FPS | 변형 강도 | 변형 규모 | 블러 강도 |
-| -------------------------- | --------- | --- | --------- | --------- | --------- |
-| Preset 1 — Subtle (섬세)   | 3         | 8   | 1.0       | 32        | 0.02      |
-| Preset 2 — Soft (부드러움) | 3         | 8   | 1.0       | 32        | 0.10      |
-| Preset 3 — Bold (역동적)   | 3         | 8   | 2.0       | 16        | 0.10      |
+| 프리셋             | 프레임 수 | FPS | 변형 강도 | 변형 규모 | 블러 강도 |
+| ------------------ | --------- | --- | --------- | --------- | --------- |
+| Preset 1 — Subtle  | 3         | 8   | 1.0       | 32        | 0.02      |
+| Preset 2 — Soft    | 3         | 8   | 1.0       | 32        | 0.10      |
+| Preset 3 — Bold    | 3         | 8   | 2.0       | 16        | 0.10      |
 
 > 💡 **추천:** 선화·스케치에는 Subtle, 채색 일러스트에는 Soft, 강조 효과에는 Bold를 시작점으로 삼아보세요.
 
@@ -57,26 +58,47 @@
 
 ```
 line-boil-studio/
-├── app.py              # Streamlit 메인 앱
-├── requirements.txt    # 의존성 목록
-├── core/
-│   └── line_boil.py    # Line Boil 엔진 (변위 맵 생성 · GIF 합성)
-├── utils/
-│   └── __init__.py
-└── docs/
-    └── PRD.md          # 제품 요구사항 문서
+├── index.html
+├── package.json
+├── vite.config.ts
+├── tsconfig.json
+├── tailwind.config.js
+├── src/
+│   ├── App.tsx                # 메인 앱 컴포넌트
+│   ├── main.tsx               # 엔트리 포인트
+│   ├── components/
+│   │   ├── Sidebar.tsx        # 프리셋 선택 · 파라미터 요약
+│   │   ├── ParameterSliders.tsx
+│   │   ├── ImageUploader.tsx
+│   │   ├── PreviewPanel.tsx
+│   │   ├── GifPreview.tsx
+│   │   └── OutputControls.tsx
+│   ├── engine/
+│   │   ├── displacement.ts    # 변위 맵 생성
+│   │   ├── gaussian-blur.ts   # 가우시안 블러
+│   │   ├── remap.ts           # 픽셀 리매핑
+│   │   └── gif-encoder.ts     # GIF 인코딩
+│   ├── constants/
+│   │   └── presets.ts
+│   └── utils/
+│       └── dpi.ts
+└── .github/workflows/
+    └── deploy.yml             # GitHub Pages 자동 배포
 ```
 
 ---
 
 ## 🛠️ 기술 스택
 
-| 라이브러리                              | 용도                         |
-| --------------------------------------- | ---------------------------- |
-| [Streamlit](https://streamlit.io)       | 웹 UI                        |
-| [Pillow](https://python-pillow.org)     | 이미지 로드 · GIF 합성       |
-| [OpenCV (headless)](https://opencv.org) | 가우시안 블러 · 변위 맵 적용 |
-| [NumPy](https://numpy.org)              | 노이즈 생성 · 배열 연산      |
+| 라이브러리                                          | 용도                         |
+| --------------------------------------------------- | ---------------------------- |
+| [React 18](https://react.dev)                       | UI 프레임워크                |
+| [Vite](https://vite.dev)                            | 빌드 도구                    |
+| [TypeScript](https://www.typescriptlang.org)        | 타입 안전성                  |
+| [Tailwind CSS](https://tailwindcss.com)             | 스타일링                     |
+| [Radix UI](https://www.radix-ui.com)                | 슬라이더 · 토스트 등 UI 컴포넌트 |
+| [gif.js](https://jnordberg.github.io/gif.js/)      | 클라이언트 사이드 GIF 인코딩 |
+| [GitHub Pages](https://pages.github.com)            | 정적 호스팅                  |
 
 ---
 
