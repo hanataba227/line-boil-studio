@@ -25,3 +25,12 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+
+# React / Node
+node_modules/
+dist/
+
+# 프로젝트 내부 문서
+.kkirikkiri/
+PRD/
+docs/
