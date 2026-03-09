@@ -3,6 +3,7 @@ Line Boil Studio — Streamlit 메인 앱
 """
 
 import streamlit as st
+import streamlit.components.v1 as components
 from PIL import Image
 import datetime
 import io
@@ -20,10 +21,15 @@ st.set_page_config(
     }
 )
 
-# ─── Google Search Console 소유권 확인 메타태그 ───────────
-st.markdown(
-    '<meta name="google-site-verification" content="dyJIa9BzppM3NI9fCM82A_KdjiyrU8NJp8p6KV2et2g" />',
-    unsafe_allow_html=True,
+# ─── Google Search Console 소유권 확인 메타태그 (<head>에 동적 삽입) ──
+components.html(
+    """<script>
+    const meta = document.createElement('meta');
+    meta.name = 'google-site-verification';
+    meta.content = 'dyJIa9BzppM3NI9fCM82A_KdjiyrU8NJp8p6KV2et2g';
+    window.parent.document.head.appendChild(meta);
+    </script>""",
+    height=0,
 )
 
 PRESET_KEYS = list(PRESETS.keys())
