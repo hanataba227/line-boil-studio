@@ -11,7 +11,8 @@
   </tr>
 </table>
 
-이미지 한 장을 업로드하면 **Line Boil(선 떨림)** 효과를 적용한 GIF를 자동으로 생성해 주는 웹 도구입니다.  
+이미지 한 장을 업로드하면 **Line Boil(선 떨림)** 효과를 적용한 GIF를 자동으로 생성해 주는 웹 도구입니다.
+모든 이미지 처리가 브라우저에서 수행되어 서버에 이미지가 전송되지 않습니다.
 
 ---
 
@@ -44,11 +45,11 @@
 
 ### 프리셋 기본값
 
-| 프리셋             | 프레임 수 | FPS | 변형 강도 | 변형 규모 | 블러 강도 |
-| ------------------ | --------- | --- | --------- | --------- | --------- |
-| Preset 1 — Subtle  | 3         | 8   | 1.0       | 32        | 0.02      |
-| Preset 2 — Soft    | 3         | 8   | 1.0       | 32        | 0.10      |
-| Preset 3 — Bold    | 3         | 8   | 2.0       | 16        | 0.10      |
+| 프리셋            | 프레임 수 | FPS | 변형 강도 | 변형 규모 | 블러 강도 |
+| ----------------- | --------- | --- | --------- | --------- | --------- |
+| Preset 1 — Subtle | 3         | 8   | 1.0       | 32        | 0.02      |
+| Preset 2 — Soft   | 3         | 8   | 1.0       | 32        | 0.10      |
+| Preset 3 — Bold   | 3         | 8   | 2.0       | 16        | 0.10      |
 
 > 💡 **추천:** 선화·스케치에는 Subtle, 채색 일러스트에는 Soft, 강조 효과에는 Bold를 시작점으로 삼아보세요.
 
@@ -67,12 +68,11 @@ line-boil-studio/
 │   ├── App.tsx                # 메인 앱 컴포넌트
 │   ├── main.tsx               # 엔트리 포인트
 │   ├── components/
-│   │   ├── Sidebar.tsx        # 프리셋 선택 · 파라미터 요약
-│   │   ├── ParameterSliders.tsx
-│   │   ├── ImageUploader.tsx
-│   │   ├── PreviewPanel.tsx
-│   │   ├── GifPreview.tsx
-│   │   └── OutputControls.tsx
+│   │   ├── Sidebar.tsx        # 프리셋 선택/생성/저장/이름 변경
+│   │   ├── ParameterSliders.tsx # 5종 파라미터 슬라이더
+│   │   ├── ImageUploader.tsx  # 드래그앤드롭 업로드
+│   │   ├── GifPreview.tsx     # GIF 결과 미리보기
+│   │   └── OutputControls.tsx # 생성/다운로드 버튼
 │   ├── engine/
 │   │   ├── displacement.ts    # 변위 맵 생성
 │   │   ├── gaussian-blur.ts   # 가우시안 블러
@@ -90,15 +90,15 @@ line-boil-studio/
 
 ## 🛠️ 기술 스택
 
-| 라이브러리                                          | 용도                         |
-| --------------------------------------------------- | ---------------------------- |
-| [React 18](https://react.dev)                       | UI 프레임워크                |
-| [Vite](https://vite.dev)                            | 빌드 도구                    |
-| [TypeScript](https://www.typescriptlang.org)        | 타입 안전성                  |
-| [Tailwind CSS](https://tailwindcss.com)             | 스타일링                     |
-| [Radix UI](https://www.radix-ui.com)                | 슬라이더 · 토스트 등 UI 컴포넌트 |
-| [gif.js](https://jnordberg.github.io/gif.js/)      | 클라이언트 사이드 GIF 인코딩 |
-| [GitHub Pages](https://pages.github.com)            | 정적 호스팅                  |
+| 라이브러리                                    | 용도                             |
+| --------------------------------------------- | -------------------------------- |
+| [React 18](https://react.dev)                 | UI 프레임워크                    |
+| [Vite](https://vite.dev)                      | 빌드 도구                        |
+| [TypeScript](https://www.typescriptlang.org)  | 타입 안전성                      |
+| [Tailwind CSS](https://tailwindcss.com)       | 스타일링                         |
+| [Radix UI](https://www.radix-ui.com)          | 슬라이더 · 토스트 등 UI 컴포넌트 |
+| [gif.js](https://jnordberg.github.io/gif.js/) | 클라이언트 사이드 GIF 인코딩     |
+| [GitHub Pages](https://pages.github.com)      | 정적 호스팅                      |
 
 ---
 
