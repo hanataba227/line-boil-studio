@@ -112,6 +112,11 @@ export function encodeGIF(img: ImageFile, params: ProcessingParams): Promise<GIF
           reject(new Error('encodeGIF: Canvas 2D 컨텍스트를 가져올 수 없습니다.'))
           return
         }
+        // 캔버스를 흰색으로 채운 뒤 이미지를 그린다.
+        // 캔버스 기본값은 rgba(0,0,0,0)이라 스케일링 시 가장자리에
+        // 반투명 픽셀이 생기면 GIF에서 검정 테두리로 보인다.
+        srcCtx.fillStyle = '#FFFFFF'
+        srcCtx.fillRect(0, 0, w, h)
         srcCtx.drawImage(image, 0, 0, w, h)
         const srcImageData = srcCtx.getImageData(0, 0, w, h)
 
@@ -121,6 +126,7 @@ export function encodeGIF(img: ImageFile, params: ProcessingParams): Promise<GIF
           quality: 10,
           width: w,
           height: h,
+          background: '#FFFFFF',
           workerScript: import.meta.env.BASE_URL + 'gif.worker.js',
         })
 
