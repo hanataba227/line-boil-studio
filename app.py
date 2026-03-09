@@ -11,9 +11,19 @@ from core.line_boil import generate_gif, compute_output_size, PRESETS
 
 # ─── 페이지 설정 ──────────────────────────────────────────
 st.set_page_config(
-    page_title="Line Boil Studio",
+    page_title="Line Boil Studio - 애니메이션 보일 효과 생성기 | Hand-drawn Wiggle Effect",
     page_icon="🎨",
     layout="wide",
+    menu_items={
+        'About': "Line Boil Studio는 수작업 느낌의 라인 보일(Line Boil) 효과를 자동으로 만들어주는 무료 도구입니다. "
+                 "Hand-drawn animation wiggle effect generator."
+    }
+)
+
+# ─── Google Search Console 소유권 확인 메타태그 ───────────
+st.markdown(
+    '<meta name="google-site-verification" content="dyJIa9BzppM3NI9fCM82A_KdjiyrU8NJp8p6KV2et2g" />',
+    unsafe_allow_html=True,
 )
 
 PRESET_KEYS = list(PRESETS.keys())
@@ -102,7 +112,12 @@ with st.sidebar:
 
 # ─── 메인 영역 ────────────────────────────────────────────
 st.title("🎨 Line Boil Studio")
-st.caption("이미지를 업로드해서 Line Boil(선 떨림) GIF를 만들어보세요.")
+st.caption("Hand-drawn Animation Line Boil Effect Generator | 손그림 느낌 선 떨림 GIF 생성기")
+st.markdown(
+    "이미지를 업로드하면 **Line Boil(라인 보일)** 효과가 적용된 GIF를 자동으로 만들어줍니다. "
+    "일러스트, 스케치, 선화에 **hand-drawn wiggle effect**를 더해 수작업 애니메이션 느낌을 연출하세요. "
+    "프리셋으로 간편하게, 슬라이더로 세밀하게 조절할 수 있습니다."
+)
 
 # ── 이미지 업로드 ─────────────────────────────────────────
 uploaded = st.file_uploader(
