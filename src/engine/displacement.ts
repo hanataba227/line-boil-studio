@@ -1,10 +1,12 @@
 /**
  * Displacement Map 생성 모듈
  *
- * 저해상도 랜덤 노이즈를 생성한 뒤 bilinear 보간으로 원본 해상도로 업스케일하고,
- * strength 계수를 곱해 픽셀 단위 최대 변위(dx, dy)를 반환한다.
- * 가우시안 블러는 gaussian-blur.ts의 applyGaussianBlur()에서 별도 적용한다.
+ * 저해상도 랜덤 노이즈를 생성한 뒤, 저해상도 단계에서 가우시안 블러를 적용하고,
+ * bilinear 보간으로 원본 해상도로 업스케일한 뒤 strength 계수를 곱해
+ * 픽셀 단위 최대 변위(dx, dy)를 반환한다.
  */
+
+import { applyGaussianBlur } from './gaussian-blur'
 
 /**
  * 배열에서 bilinear 보간 샘플링
@@ -55,6 +57,7 @@ export interface DisplacementMap {
  * @param height   출력 이미지 높이 (px)
  * @param scale    노이즈 공간 크기 (클수록 변위가 넓은 영역에 분포)
  * @param strength 픽셀 단위 최대 변위
+ * @param blurRatio 블러 비율 (저해상도 단계에서 적용)
  * @returns        { dx, dy } — 각각 width * height 크기의 Float32Array
  */
 export function generateDisplacementMap(
@@ -62,6 +65,7 @@ export function generateDisplacementMap(
   height: number,
   scale: number,
   strength: number,
+  blurRatio: number = 0,
 ): DisplacementMap {
   if (width <= 0 || height <= 0) {
     throw new Error(`generateDisplacementMap: width(${width}), height(${height}) must be positive`)
@@ -74,12 +78,20 @@ export function generateDisplacementMap(
   const noiseW = Math.ceil(width / scale)
 
   // 저해상도 랜덤 노이즈 생성 (dx, dy 별도)
-  const lowResDx = new Float32Array(noiseH * noiseW)
-  const lowResDy = new Float32Array(noiseH * noiseW)
+  const rawDx = new Float32Array(noiseH * noiseW)
+  const rawDy = new Float32Array(noiseH * noiseW)
   for (let i = 0; i < noiseH * noiseW; i++) {
-    lowResDx[i] = Math.random()
-    lowResDy[i] = Math.random()
+    rawDx[i] = Math.random()
+    rawDy[i] = Math.random()
   }
+
+  // 저해상도 단계에서 가우시안 블러 적용 (연산량 대폭 절감)
+  const lowResDx = (blurRatio > 0 && noiseW >= 3 && noiseH >= 3)
+    ? applyGaussianBlur(rawDx, noiseW, noiseH, blurRatio)
+    : rawDx
+  const lowResDy = (blurRatio > 0 && noiseW >= 3 && noiseH >= 3)
+    ? applyGaussianBlur(rawDy, noiseW, noiseH, blurRatio)
+    : rawDy
 
   // 원본 해상도로 bilinear 업스케일 후 strength 곱하기
   const dx = new Float32Array(width * height)

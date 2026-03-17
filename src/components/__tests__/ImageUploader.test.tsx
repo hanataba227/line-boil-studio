@@ -2,26 +2,24 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import ImageUploader from '../ImageUploader'
 
-// exif-js 모듈 mock
-vi.mock('exif-js', () => ({
-  default: {
-    getData: (_file: unknown, callback: () => void) => {
-      callback.call({})
-    },
-    getTag: () => null,
-  },
-}))
-
 // FileReader mock
 class MockFileReader {
-  onload: ((e: { target: { result: string } }) => void) | null = null
+  onload: ((e: { target: { result: unknown } }) => void) | null = null
   onerror: (() => void) | null = null
-  result: string = ''
+  result: unknown = ''
 
   readAsDataURL(_file: File) {
-    // 즉시 onload 호출
     setTimeout(() => {
       this.result = 'data:image/png;base64,abc123'
+      if (this.onload) {
+        this.onload({ target: { result: this.result } })
+      }
+    }, 0)
+  }
+
+  readAsArrayBuffer(_file: File) {
+    setTimeout(() => {
+      this.result = new ArrayBuffer(0)
       if (this.onload) {
         this.onload({ target: { result: this.result } })
       }

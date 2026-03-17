@@ -59,12 +59,14 @@ export function bilinearSampleRGBA(
  * @param srcData 원본 ImageData
  * @param dx      x축 변위 배열 (width * height)
  * @param dy      y축 변위 배열 (width * height)
- * @returns       변형된 새 ImageData
+ * @param output  재사용할 ImageData (생략 시 새로 생성)
+ * @returns       변형된 ImageData
  */
 export function remapFrame(
   srcData: ImageData,
   dx: Float32Array,
   dy: Float32Array,
+  output?: ImageData,
 ): ImageData {
   const { width, height } = srcData
 
@@ -75,24 +77,55 @@ export function remapFrame(
     )
   }
 
-  const output = new ImageData(width, height)
+  const out = output ?? new ImageData(width, height)
+  const src = srcData.data
+  const dst = out.data
+  const wMax = width - 1
+  const hMax = height - 1
+  const w4 = width * 4
 
   for (let y = 0; y < height; y++) {
+    const yOff = y * width
     for (let x = 0; x < width; x++) {
-      const i = y * width + x
+      const i = yOff + x
 
-      const srcX = x + dx[i]
-      const srcY = y + dy[i]
+      // 브랜치리스 clamp
+      let cx = x + dx[i]
+      let cy = y + dy[i]
+      cx = cx < 0 ? 0 : cx > wMax ? wMax : cx
+      cy = cy < 0 ? 0 : cy > hMax ? hMax : cy
 
-      const [r, g, b, a] = bilinearSampleRGBA(srcData, srcX, srcY)
+      const x0 = cx | 0
+      const y0 = cy | 0
+      const x1 = x0 < wMax ? x0 + 1 : wMax
+      const y1 = y0 < hMax ? y0 + 1 : hMax
+
+      const tx = cx - x0
+      const ty = cy - y0
+      const tx1 = 1 - tx
+      const ty1 = 1 - ty
+
+      const w00 = tx1 * ty1
+      const w10 = tx * ty1
+      const w01 = tx1 * ty
+      const w11 = tx * ty
+
+      const r0 = y0 * w4
+      const r1 = y1 * w4
+      const c0 = x0 * 4
+      const c1 = x1 * 4
+      const idx00 = r0 + c0
+      const idx10 = r0 + c1
+      const idx01 = r1 + c0
+      const idx11 = r1 + c1
 
       const outIdx = i * 4
-      output.data[outIdx] = r
-      output.data[outIdx + 1] = g
-      output.data[outIdx + 2] = b
-      output.data[outIdx + 3] = a
+      dst[outIdx]     = (src[idx00] * w00 + src[idx10] * w10 + src[idx01] * w01 + src[idx11] * w11 + 0.5) | 0
+      dst[outIdx + 1] = (src[idx00 + 1] * w00 + src[idx10 + 1] * w10 + src[idx01 + 1] * w01 + src[idx11 + 1] * w11 + 0.5) | 0
+      dst[outIdx + 2] = (src[idx00 + 2] * w00 + src[idx10 + 2] * w10 + src[idx01 + 2] * w01 + src[idx11 + 2] * w11 + 0.5) | 0
+      dst[outIdx + 3] = (src[idx00 + 3] * w00 + src[idx10 + 3] * w10 + src[idx01 + 3] * w01 + src[idx11 + 3] * w11 + 0.5) | 0
     }
   }
 
-  return output
+  return out
 }

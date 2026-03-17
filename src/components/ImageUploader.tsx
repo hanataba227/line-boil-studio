@@ -10,21 +10,78 @@ const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20MB
 
 function parseDpiFromExif(file: File): Promise<number | null> {
   return new Promise((resolve) => {
-    import('exif-js').then(({ default: EXIF }) => {
-      EXIF.getData(file as unknown as Parameters<typeof EXIF.getData>[0], function (this: File) {
-        try {
-          const xRes = EXIF.getTag(this, 'XResolution')
-          const unit = EXIF.getTag(this, 'ResolutionUnit')
-          if (xRes && typeof xRes === 'number' && unit === 2) {
-            resolve(Math.round(xRes))
-          } else {
-            resolve(null)
+    const timeout = setTimeout(() => resolve(null), 3000)
+
+    const reader = new FileReader()
+    reader.onerror = () => { clearTimeout(timeout); resolve(null) }
+    reader.onload = (e) => {
+      clearTimeout(timeout)
+      try {
+        const buf = e.target?.result as ArrayBuffer
+        if (!buf) { resolve(null); return }
+        const view = new DataView(buf)
+
+        // JPEG: FF D8
+        if (view.getUint8(0) !== 0xFF || view.getUint8(1) !== 0xD8) { resolve(null); return }
+
+        let offset = 2
+        while (offset < view.byteLength - 4) {
+          if (view.getUint8(offset) !== 0xFF) { resolve(null); return }
+          const marker = view.getUint8(offset + 1)
+          const segLen = view.getUint16(offset + 2)
+
+          // APP1 (EXIF) marker = 0xFFE1
+          if (marker === 0xE1) {
+            const exifOffset = offset + 4
+            // Check "Exif\0\0"
+            if (
+              view.getUint8(exifOffset) === 0x45 &&
+              view.getUint8(exifOffset + 1) === 0x78 &&
+              view.getUint8(exifOffset + 2) === 0x69 &&
+              view.getUint8(exifOffset + 3) === 0x66
+            ) {
+              const tiffOffset = exifOffset + 6
+              const bigEnd = view.getUint16(tiffOffset) === 0x4D4D
+              const ifdOffset = tiffOffset + view.getUint32(tiffOffset + 4, !bigEnd)
+              const entries = view.getUint16(ifdOffset, !bigEnd)
+
+              let xRes: number | null = null
+              let unit: number | null = null
+
+              for (let i = 0; i < entries; i++) {
+                const entryOffset = ifdOffset + 2 + i * 12
+                const tag = view.getUint16(entryOffset, !bigEnd)
+
+                if (tag === 0x011A) {
+                  // XResolution (RATIONAL: numerator/denominator)
+                  const valOffset = tiffOffset + view.getUint32(entryOffset + 8, !bigEnd)
+                  const num = view.getUint32(valOffset, !bigEnd)
+                  const den = view.getUint32(valOffset + 4, !bigEnd)
+                  xRes = den > 0 ? num / den : null
+                } else if (tag === 0x0128) {
+                  // ResolutionUnit (SHORT)
+                  unit = view.getUint16(entryOffset + 8, !bigEnd)
+                }
+              }
+
+              if (xRes != null && unit === 2) {
+                resolve(Math.round(xRes))
+              } else {
+                resolve(null)
+              }
+              return
+            }
           }
-        } catch {
-          resolve(null)
+
+          offset += 2 + segLen
         }
-      })
-    }).catch(() => resolve(null))
+
+        resolve(null)
+      } catch {
+        resolve(null)
+      }
+    }
+    reader.readAsArrayBuffer(file)
   })
 }
 

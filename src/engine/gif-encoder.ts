@@ -13,7 +13,6 @@
 import GIF from 'gif.js'
 import { ProcessingParams, ImageFile, GIFResult } from '../types'
 import { generateDisplacementMap } from './displacement'
-import { applyGaussianBlur } from './gaussian-blur'
 import { remapFrame } from './remap'
 
 /**
@@ -142,22 +141,30 @@ export function encodeGIF(img: ImageFile, params: ProcessingParams): Promise<GIF
           return
         }
 
-        for (let f = 0; f < params.frameCount; f++) {
-          // 새 displacement map 생성
-          const { dx: rawDx, dy: rawDy } = generateDisplacementMap(w, h, params.scale, params.strength)
+        // 출력 버퍼 재사용 (매 프레임 new ImageData 방지)
+        const outputBuffer = new ImageData(w, h)
 
-          // 가우시안 블러 적용
-          const dx = applyGaussianBlur(rawDx, w, h, params.blurRatio)
-          const dy = applyGaussianBlur(rawDy, w, h, params.blurRatio)
+        // 비동기 프레임 생성 (UI 블로킹 방지)
+        let f = 0
+        const processFrame = () => {
+          try {
+            const { dx, dy } = generateDisplacementMap(w, h, params.scale, params.strength, params.blurRatio)
+            remapFrame(srcImageData, dx, dy, outputBuffer)
+            frameCtx.putImageData(outputBuffer, 0, 0)
+            gif.addFrame(frameCanvas, { delay, copy: true })
 
-          // 픽셀 리매핑
-          const remapped = remapFrame(srcImageData, dx, dy)
-
-          // 프레임 캔버스에 그리기
-          frameCtx.putImageData(remapped, 0, 0)
-
-          gif.addFrame(frameCanvas, { delay, copy: true })
+            f++
+            if (f < params.frameCount) {
+              // 다음 프레임 전 UI 스레드에 양보
+              setTimeout(processFrame, 0)
+            } else {
+              gif.render()
+            }
+          } catch (err) {
+            reject(err instanceof Error ? err : new Error(String(err)))
+          }
         }
+        processFrame()
 
         // GIF 렌더링
         gif.on('finished', (blob: Blob) => {
@@ -178,8 +185,6 @@ export function encodeGIF(img: ImageFile, params: ProcessingParams): Promise<GIF
         gif.on('error', (err: Error) => {
           reject(new Error(`encodeGIF: GIF 인코딩 중 오류 — ${err.message ?? err}`))
         })
-
-        gif.render()
       } catch (err) {
         reject(err instanceof Error ? err : new Error(String(err)))
       }
