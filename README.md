@@ -2,8 +2,8 @@
 
 <table>
   <tr>
-    <td align="center"><img src="example_input.jpg" width="360" alt="원본 이미지"></td>
-    <td align="center"><img src="example_output.gif" width="360" alt="Line Boil GIF"></td>
+    <td align="center"><img src="public/example_input.jpg" width="360" alt="원본 이미지"></td>
+    <td align="center"><img src="public/example_output.gif" width="360" alt="Line Boil GIF"></td>
   </tr>
   <tr>
     <th align="center">원본 이미지</th>
