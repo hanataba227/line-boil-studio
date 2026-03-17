@@ -1,4 +1,5 @@
 import { useCallback, useReducer, useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import { AppState, ImageFile, ProcessingParams, GIFResult, PresetName } from './types'
 import { DEFAULT_PARAMS, PRESETS } from './constants/presets'
 import { encodeGIF } from './engine/gif-encoder'
@@ -148,31 +149,62 @@ export default function App() {
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A]">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3">
-        <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center"
-          style={{ backgroundColor: '#6C63FF' }}
-          aria-hidden="true"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="white"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+      <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center">
+        <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ backgroundColor: '#6C63FF' }}
+            aria-hidden="true"
           >
-            <path d="M5 5 C 8 3, 16 9, 19 7" />
-            <path d="M5 10 C 8 8, 16 14, 19 12" />
-            <path d="M5 15 C 8 13, 16 19, 19 17" />
-            <path d="M5 20 C 8 18, 16 24, 19 22" />
-          </svg>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M5 5 C 8 3, 16 9, 19 7" />
+              <path d="M5 10 C 8 8, 16 14, 19 12" />
+              <path d="M5 15 C 8 13, 16 19, 19 17" />
+              <path d="M5 20 C 8 18, 16 24, 19 22" />
+            </svg>
+          </div>
+          <h1 className="text-lg font-bold tracking-tight" style={{ color: '#1A1A1A' }}>
+            Line Boil Studio
+          </h1>
+        </Link>
+
+        <div className="ml-auto flex items-center gap-1">
+          <a
+            href="https://github.com/hanataba227/line-boil-studio"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="소스 코드 (GitHub)"
+            className="text-sm font-medium px-3 py-1.5 rounded-md transition-colors hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+          >
+            GitHub
+          </a>
+          <a
+            href="https://forms.gle/KSacKqNWgkF7i1RVA"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="건의사항 및 오류 제보"
+            className="text-sm font-medium px-3 py-1.5 rounded-md transition-colors hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+          >
+            건의함
+          </a>
+          <Link
+            to="/guide"
+            title="파라미터 설명 및 프리셋 안내"
+            className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-md transition-colors hover:bg-gray-100"
+            style={{ color: '#6C63FF' }}
+          >
+            <span>사용법</span>
+          </Link>
         </div>
-        <h1 className="text-lg font-bold tracking-tight" style={{ color: '#1A1A1A' }}>
-          Line Boil Studio
-        </h1>
       </header>
 
       {/* Error Banner */}
